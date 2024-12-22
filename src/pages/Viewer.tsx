@@ -3,9 +3,10 @@ import { Header } from "@/components/viewer/Header";
 import { Sidebar } from "@/components/viewer/Sidebar";
 import { Navigation } from "@/components/viewer/Navigation";
 import * as pdfjsLib from 'pdfjs-dist';
+import { PDFWorker } from 'pdfjs-dist/legacy/build/pdf.worker.entry';
 
 // Initialize PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+pdfjsLib.GlobalWorkerOptions.workerPort = new PDFWorker();
 
 // Convert Google Drive view URL to direct download URL
 const getDirectDownloadUrl = (driveUrl: string) => {
