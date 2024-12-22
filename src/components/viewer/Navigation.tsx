@@ -25,9 +25,21 @@ export const Navigation = ({
   availableChapters,
   children,
 }: NavigationProps) => {
+  const handleScroll = (direction: 'up' | 'down') => {
+    const scrollAmount = window.innerHeight * 0.8;
+    window.scrollBy({
+      top: direction === 'up' ? -scrollAmount : scrollAmount,
+      behavior: 'smooth'
+    });
+  };
+
   return (
     <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center space-x-4 bg-background/80 backdrop-blur-md rounded-full border px-4 py-2">
-      <Button variant="ghost" size="icon" onClick={onPrevPage}>
+      <Button 
+        variant="ghost" 
+        size="icon" 
+        onClick={() => handleScroll('up')}
+      >
         <ChevronLeft className="h-4 w-4" />
       </Button>
       
@@ -36,20 +48,22 @@ export const Navigation = ({
           <SelectValue placeholder="Select chapter" />
         </SelectTrigger>
         <SelectContent>
-          {Array.from({ length: 3 }, (_, i) => (i + 1).toString()).map((chapter) => (
+          {availableChapters.map((chapter) => (
             <SelectItem 
               key={chapter} 
               value={chapter}
-              disabled={!availableChapters.includes(chapter)}
             >
               Chapter {chapter}
-              {!availableChapters.includes(chapter) && " (Not Available)"}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
       
-      <Button variant="ghost" size="icon" onClick={onNextPage}>
+      <Button 
+        variant="ghost" 
+        size="icon" 
+        onClick={() => handleScroll('down')}
+      >
         <ChevronRight className="h-4 w-4" />
       </Button>
 
