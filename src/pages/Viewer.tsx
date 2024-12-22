@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/viewer/Header";
 import { Sidebar } from "@/components/viewer/Sidebar";
 import { Navigation } from "@/components/viewer/Navigation";
@@ -26,6 +26,7 @@ const chapters = {
 const Viewer = () => {
   const [currentChapter, setCurrentChapter] = useState("1");
   const [currentPage, setCurrentPage] = useState("1");
+  const [isScrolling, setIsScrolling] = useState(false);
   
   const handleChapterChange = (chapter: string) => {
     console.log("Changing to chapter:", chapter);
@@ -36,12 +37,14 @@ const Viewer = () => {
   const handlePageChange = (page: string) => {
     console.log("Changing to page:", page);
     setCurrentPage(page);
+    scrollToTop();
   };
   
   const handlePrevPage = () => {
     const currentPageNum = parseInt(currentPage);
     if (currentPageNum > 1) {
       setCurrentPage((currentPageNum - 1).toString());
+      scrollToTop();
     }
   };
   
@@ -49,8 +52,54 @@ const Viewer = () => {
     const currentPageNum = parseInt(currentPage);
     if (currentPageNum < chapters[currentChapter].length) {
       setCurrentPage((currentPageNum + 1).toString());
+      scrollToTop();
     }
   };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    let scrollTimeout: NodeJS.Timeout;
+
+    const handleScroll = () => {
+      if (isScrolling) return;
+
+      setIsScrolling(true);
+      
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        const scrollPosition = window.scrollY;
+        const windowHeight = window.innerHeight;
+        const documentHeight = document.documentElement.scrollHeight;
+        
+        // Scroll down detection (near bottom)
+        if (scrollPosition + windowHeight >= documentHeight - 100) {
+          const currentPageNum = parseInt(currentPage);
+          if (currentPageNum < chapters[currentChapter].length) {
+            handlePageChange((currentPageNum + 1).toString());
+          }
+        }
+        
+        // Scroll up detection (near top)
+        if (scrollPosition <= 100) {
+          const currentPageNum = parseInt(currentPage);
+          if (currentPageNum > 1) {
+            handlePageChange((currentPageNum - 1).toString());
+          }
+        }
+
+        setIsScrolling(false);
+      }, 150); // Debounce scroll events
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearTimeout(scrollTimeout);
+    };
+  }, [currentPage, currentChapter, isScrolling]);
 
   return (
     <div className="min-h-screen bg-background">
