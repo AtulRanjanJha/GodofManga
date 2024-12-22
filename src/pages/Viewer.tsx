@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Header } from "@/components/viewer/Header";
 import { Sidebar } from "@/components/viewer/Sidebar";
 import { Navigation } from "@/components/viewer/Navigation";
@@ -26,80 +26,37 @@ const chapters = {
 const Viewer = () => {
   const [currentChapter, setCurrentChapter] = useState("1");
   const [currentPage, setCurrentPage] = useState("1");
-  const [isScrolling, setIsScrolling] = useState(false);
   
   const handleChapterChange = (chapter: string) => {
     console.log("Changing to chapter:", chapter);
     setCurrentChapter(chapter);
-    setCurrentPage("1"); // Reset to first page when chapter changes
+    setCurrentPage("1");
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   
   const handlePageChange = (page: string) => {
     console.log("Changing to page:", page);
     setCurrentPage(page);
-    scrollToTop();
+    // Find the page element and scroll to it
+    const pageElement = document.getElementById(`page-${page}`);
+    if (pageElement) {
+      pageElement.scrollIntoView({ behavior: 'smooth' });
+    }
   };
   
   const handlePrevPage = () => {
     const currentPageNum = parseInt(currentPage);
     if (currentPageNum > 1) {
-      setCurrentPage((currentPageNum - 1).toString());
-      scrollToTop();
+      handlePageChange((currentPageNum - 1).toString());
     }
   };
   
   const handleNextPage = () => {
     const currentPageNum = parseInt(currentPage);
     if (currentPageNum < chapters[currentChapter].length) {
-      setCurrentPage((currentPageNum + 1).toString());
-      scrollToTop();
+      handlePageChange((currentPageNum + 1).toString());
     }
   };
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  useEffect(() => {
-    let scrollTimeout: NodeJS.Timeout;
-
-    const handleScroll = () => {
-      if (isScrolling) return;
-
-      setIsScrolling(true);
-      
-      clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => {
-        const scrollPosition = window.scrollY;
-        const windowHeight = window.innerHeight;
-        const documentHeight = document.documentElement.scrollHeight;
-        
-        // Scroll down detection (near bottom)
-        if (scrollPosition + windowHeight >= documentHeight - 100) {
-          const currentPageNum = parseInt(currentPage);
-          if (currentPageNum < chapters[currentChapter].length) {
-            handlePageChange((currentPageNum + 1).toString());
-          }
-        }
-        
-        // Scroll up detection (near top)
-        if (scrollPosition <= 100) {
-          const currentPageNum = parseInt(currentPage);
-          if (currentPageNum > 1) {
-            handlePageChange((currentPageNum - 1).toString());
-          }
-        }
-
-        setIsScrolling(false);
-      }, 150); // Debounce scroll events
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      clearTimeout(scrollTimeout);
-    };
-  }, [currentPage, currentChapter, isScrolling]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -107,13 +64,19 @@ const Viewer = () => {
       
       <main className="pt-16 pb-20 px-4 md:px-12 max-w-6xl mx-auto">
         <div className="space-y-8">
-          <div className="aspect-[3/4] w-full max-h-[80vh] relative">
-            <img
-              src={chapters[currentChapter][parseInt(currentPage) - 1]}
-              alt={`Chapter ${currentChapter} Page ${currentPage}`}
-              className="w-full h-full object-contain"
-            />
-          </div>
+          {chapters[currentChapter].map((imageUrl, index) => (
+            <div 
+              key={index}
+              id={`page-${index + 1}`}
+              className="aspect-[3/4] w-full max-h-[80vh] relative"
+            >
+              <img
+                src={imageUrl}
+                alt={`Chapter ${currentChapter} Page ${index + 1}`}
+                className="w-full h-full object-contain"
+              />
+            </div>
+          ))}
         </div>
       </main>
       
