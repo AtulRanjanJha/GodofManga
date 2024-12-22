@@ -1,43 +1,71 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/viewer/Header";
 import { Sidebar } from "@/components/viewer/Sidebar";
 import { Navigation } from "@/components/viewer/Navigation";
+import * as pdfjsLib from 'pdfjs-dist';
 
-// Mock data - in a real app this would come from an API
-const chapters = {
-  "1": [
-    "/lovable-uploads/0ba4a759-8ab4-4a88-9016-52c0594f1937.png",
-    "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b",
-    "https://images.unsplash.com/photo-1518770660439-4636190af475",
-    "https://images.unsplash.com/photo-1461749280684-dccba630e2f6"
-  ],
-  "2": [
-    "https://images.unsplash.com/photo-1516116216624-53e697fedbea",
-    "https://images.unsplash.com/photo-1515879218367-8466d910aaa4",
-    "https://images.unsplash.com/photo-1520085601670-ee14aa5fa3e8"
-  ],
-  "3": [
-    "https://images.unsplash.com/photo-1542831371-29b0f74f9713",
-    "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5",
-    "https://images.unsplash.com/photo-1537432376769-00f5c2f4c8d2"
-  ]
+// Initialize PDF.js worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+
+// Convert Google Drive view URL to direct download URL
+const getDirectDownloadUrl = (driveUrl: string) => {
+  const fileId = driveUrl.match(/\/d\/(.*?)\//)![1];
+  return `https://drive.google.com/uc?export=download&id=${fileId}`;
 };
 
 const Viewer = () => {
   const [currentChapter, setCurrentChapter] = useState("1");
   const [currentPage, setCurrentPage] = useState("1");
+  const [pdfPages, setPdfPages] = useState<string[]>([]);
+  const [totalPages, setTotalPages] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadPDF = async () => {
+      try {
+        setIsLoading(true);
+        const pdfUrl = getDirectDownloadUrl("https://drive.google.com/file/d/1kYI-g_z_o_GE8ZLb1YJlhQuRa-YTDWem/view");
+        
+        const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
+        setTotalPages(pdf.numPages);
+        
+        const pages: string[] = [];
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const viewport = page.getViewport({ scale: 1.5 });
+          
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d')!;
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+          
+          await page.render({
+            canvasContext: context,
+            viewport: viewport
+          }).promise;
+          
+          pages.push(canvas.toDataURL());
+        }
+        
+        setPdfPages(pages);
+      } catch (error) {
+        console.error('Error loading PDF:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadPDF();
+  }, []);
   
   const handleChapterChange = (chapter: string) => {
-    console.log("Changing to chapter:", chapter);
     setCurrentChapter(chapter);
     setCurrentPage("1");
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   
   const handlePageChange = (page: string) => {
-    console.log("Changing to page:", page);
     setCurrentPage(page);
-    // Find the page element and scroll to it
     const pageElement = document.getElementById(`page-${page}`);
     if (pageElement) {
       pageElement.scrollIntoView({ behavior: 'smooth' });
@@ -53,7 +81,7 @@ const Viewer = () => {
   
   const handleNextPage = () => {
     const currentPageNum = parseInt(currentPage);
-    if (currentPageNum < chapters[currentChapter].length) {
+    if (currentPageNum < totalPages) {
       handlePageChange((currentPageNum + 1).toString());
     }
   };
@@ -63,21 +91,27 @@ const Viewer = () => {
       <Header />
       
       <main className="pt-16 pb-20 px-4 md:px-12 max-w-6xl mx-auto">
-        <div className="space-y-8">
-          {chapters[currentChapter].map((imageUrl, index) => (
-            <div 
-              key={index}
-              id={`page-${index + 1}`}
-              className="aspect-[3/4] w-full max-h-[80vh] relative"
-            >
-              <img
-                src={imageUrl}
-                alt={`Chapter ${currentChapter} Page ${index + 1}`}
-                className="w-full h-full object-contain"
-              />
-            </div>
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="flex items-center justify-center h-[60vh]">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+          </div>
+        ) : (
+          <div className="space-y-8">
+            {pdfPages.map((pageUrl, index) => (
+              <div 
+                key={index}
+                id={`page-${index + 1}`}
+                className="aspect-auto w-full relative"
+              >
+                <img
+                  src={pageUrl}
+                  alt={`Page ${index + 1}`}
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </main>
       
       <Sidebar />
@@ -88,7 +122,7 @@ const Viewer = () => {
         onPageChange={handlePageChange}
         onPrevPage={handlePrevPage}
         onNextPage={handleNextPage}
-        totalPages={chapters[currentChapter].length}
+        totalPages={totalPages}
       />
     </div>
   );
