@@ -10,24 +10,18 @@ import {
 
 interface NavigationProps {
   currentChapter: string;
-  currentPage: string;
   onChapterChange: (chapter: string) => void;
-  onPageChange: (page: string) => void;
   onPrevPage: () => void;
   onNextPage: () => void;
-  totalPages: number;
   availableChapters: string[];
   children?: React.ReactNode;
 }
 
 export const Navigation = ({
   currentChapter,
-  currentPage,
   onChapterChange,
-  onPageChange,
   onPrevPage,
   onNextPage,
-  totalPages,
   availableChapters,
   children,
 }: NavigationProps) => {
@@ -50,19 +44,6 @@ export const Navigation = ({
             >
               Chapter {chapter}
               {!availableChapters.includes(chapter) && " (Not Available)"}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      
-      <Select value={currentPage} onValueChange={onPageChange}>
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Select page" />
-        </SelectTrigger>
-        <SelectContent>
-          {Array.from({ length: totalPages }, (_, i) => (
-            <SelectItem key={i + 1} value={(i + 1).toString()}>
-              Page {i + 1}
             </SelectItem>
           ))}
         </SelectContent>
