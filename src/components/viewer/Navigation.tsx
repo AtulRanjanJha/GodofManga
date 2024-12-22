@@ -17,6 +17,7 @@ interface NavigationProps {
   onNextPage: () => void;
   totalPages: number;
   availableChapters: string[];
+  children?: React.ReactNode;
 }
 
 export const Navigation = ({
@@ -28,6 +29,7 @@ export const Navigation = ({
   onNextPage,
   totalPages,
   availableChapters,
+  children,
 }: NavigationProps) => {
   return (
     <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center space-x-4 bg-background/80 backdrop-blur-md rounded-full border px-4 py-2">
@@ -69,6 +71,8 @@ export const Navigation = ({
       <Button variant="ghost" size="icon" onClick={onNextPage}>
         <ChevronRight className="h-4 w-4" />
       </Button>
+
+      {children}
     </div>
   );
 };

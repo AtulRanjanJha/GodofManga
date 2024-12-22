@@ -3,7 +3,7 @@ import { Header } from "@/components/viewer/Header";
 import { Sidebar } from "@/components/viewer/Sidebar";
 import { Navigation } from "@/components/viewer/Navigation";
 import { Button } from "@/components/ui/button";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun, ZoomIn, ZoomOut } from "lucide-react";
 import { useTheme } from "next-themes";
 
 // Define chapter links - add more as needed
@@ -18,6 +18,7 @@ const Viewer = () => {
   const [currentPage, setCurrentPage] = useState("1");
   const [totalPages] = useState(10);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [zoom, setZoom] = useState(100);
   const { theme, setTheme } = useTheme();
 
   const handleChapterChange = (chapter: string) => {
@@ -45,27 +46,17 @@ const Viewer = () => {
     }
   };
 
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
+  const handleZoomIn = () => {
+    setZoom(prev => Math.min(prev + 10, 200));
+  };
+
+  const handleZoomOut = () => {
+    setZoom(prev => Math.max(prev - 10, 50));
   };
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
-      <Button
-        variant="outline"
-        size="icon"
-        className="fixed top-20 right-4 z-50"
-        onClick={toggleTheme}
-      >
-        {theme === "dark" ? (
-          <Sun className="h-[1.2rem] w-[1.2rem]" />
-        ) : (
-          <Moon className="h-[1.2rem] w-[1.2rem]" />
-        )}
-        <span className="sr-only">Toggle theme</span>
-      </Button>
       
       <main className={`pt-16 pb-20 px-4 md:px-12 max-w-6xl mx-auto transition-all duration-300 ${isSidebarOpen ? 'mr-64' : ''}`}>
         <div className="w-full aspect-[4/3] relative">
@@ -73,6 +64,11 @@ const Viewer = () => {
             src={`https://drive.google.com/file/d/${chapterLinks[currentChapter as keyof typeof chapterLinks]}/preview`}
             className="w-full h-full absolute inset-0"
             allow="autoplay"
+            style={{ 
+              transform: `scale(${zoom / 100})`,
+              transformOrigin: 'top left',
+              transition: 'transform 0.3s ease'
+            }}
           />
         </div>
       </main>
@@ -89,7 +85,38 @@ const Viewer = () => {
         availableChapters={Object.keys(chapterLinks).filter(
           chapter => chapterLinks[chapter as keyof typeof chapterLinks]
         )}
-      />
+      >
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          >
+            {theme === 'dark' ? (
+              <Sun className="h-4 w-4" />
+            ) : (
+              <Moon className="h-4 w-4" />
+            )}
+            <span className="sr-only">Toggle theme</span>
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleZoomOut}
+          >
+            <ZoomOut className="h-4 w-4" />
+            <span className="sr-only">Zoom out</span>
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleZoomIn}
+          >
+            <ZoomIn className="h-4 w-4" />
+            <span className="sr-only">Zoom in</span>
+          </Button>
+        </div>
+      </Navigation>
     </div>
   );
 };
