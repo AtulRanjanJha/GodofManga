@@ -9,8 +9,8 @@ import { useTheme } from "next-themes";
 // Define chapter links - add more as needed
 const chapterLinks = {
   "1": "1kYI-g_z_o_GE8ZLb1YJlhQuRa-YTDWem",
-  "2": "", // Empty string means chapter is not available
-  "3": "",
+  "2": "1fhk8rouNUra9sQifsA_DdK5y1Oyo2P6m",
+  "3": "", // Empty string means chapter is not available
 };
 
 const Viewer = () => {
