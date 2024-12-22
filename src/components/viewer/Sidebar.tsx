@@ -3,8 +3,17 @@ import { ChevronRight, MessageSquare, Bookmark, Info, AlertTriangle } from "luci
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export const Sidebar = () => {
+interface SidebarProps {
+  onOpenChange: (isOpen: boolean) => void;
+}
+
+export const Sidebar = ({ onOpenChange }: SidebarProps) => {
   const [isOpen, setIsOpen] = useState(true);
+
+  const toggleSidebar = () => {
+    setIsOpen(!isOpen);
+    onOpenChange(!isOpen);
+  };
 
   return (
     <div
@@ -17,7 +26,7 @@ export const Sidebar = () => {
         variant="ghost"
         size="icon"
         className="absolute -left-10 top-4"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={toggleSidebar}
       >
         <ChevronRight className={cn("h-4 w-4 transition-transform", isOpen && "rotate-180")} />
       </Button>

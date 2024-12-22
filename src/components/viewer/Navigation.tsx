@@ -16,6 +16,7 @@ interface NavigationProps {
   onPrevPage: () => void;
   onNextPage: () => void;
   totalPages: number;
+  availableChapters: string[];
 }
 
 export const Navigation = ({
@@ -26,6 +27,7 @@ export const Navigation = ({
   onPrevPage,
   onNextPage,
   totalPages,
+  availableChapters,
 }: NavigationProps) => {
   return (
     <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center space-x-4 bg-background/80 backdrop-blur-md rounded-full border px-4 py-2">
@@ -38,9 +40,16 @@ export const Navigation = ({
           <SelectValue placeholder="Select chapter" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="1">Chapter 1</SelectItem>
-          <SelectItem value="2">Chapter 2</SelectItem>
-          <SelectItem value="3">Chapter 3</SelectItem>
+          {Array.from({ length: 3 }, (_, i) => (i + 1).toString()).map((chapter) => (
+            <SelectItem 
+              key={chapter} 
+              value={chapter}
+              disabled={!availableChapters.includes(chapter)}
+            >
+              Chapter {chapter}
+              {!availableChapters.includes(chapter) && " (Not Available)"}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
       
