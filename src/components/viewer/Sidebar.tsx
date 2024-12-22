@@ -4,6 +4,16 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useToast } from "@/components/ui/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 interface SidebarProps {
   onOpenChange: (isOpen: boolean) => void;
@@ -18,6 +28,7 @@ export const Sidebar = ({ onOpenChange, onFitChange, isHeaderSticky, onHeaderSti
   const [fitMode, setFitMode] = useState<'both' | 'height' | 'width'>('both');
   const [showDetails, setShowDetails] = useState(false);
   const [comment, setComment] = useState('');
+  const [reportType, setReportType] = useState('');
   const { toast } = useToast();
 
   const toggleSidebar = () => {
@@ -40,9 +51,18 @@ export const Sidebar = ({ onOpenChange, onFitChange, isHeaderSticky, onHeaderSti
   };
 
   const handleReport = () => {
+    if (!reportType) {
+      toast({
+        title: "Please select a report type",
+        variant: "destructive",
+        duration: 3000,
+      });
+      return;
+    }
+    
     toast({
       title: "Report submitted",
-      description: "Thank you for your feedback",
+      description: `Report type: ${reportType}`,
       duration: 3000,
     });
   };
@@ -125,10 +145,43 @@ export const Sidebar = ({ onOpenChange, onFitChange, isHeaderSticky, onHeaderSti
                 </CollapsibleContent>
               </Collapsible>
 
-              <Button variant="ghost" className="w-full justify-start" onClick={handleReport}>
-                <AlertTriangle className="mr-2 h-4 w-4" />
-                Report
-              </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" className="w-full justify-start">
+                    <AlertTriangle className="mr-2 h-4 w-4" />
+                    Report
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Submit a Report</DialogTitle>
+                    <DialogDescription>
+                      Please select the type of issue you'd like to report
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <RadioGroup value={reportType} onValueChange={setReportType}>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="content" id="content" />
+                        <Label htmlFor="content">Inappropriate Content</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="quality" id="quality" />
+                        <Label htmlFor="quality">Poor Image Quality</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="missing" id="missing" />
+                        <Label htmlFor="missing">Missing Pages</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="other" id="other" />
+                        <Label htmlFor="other">Other Issue</Label>
+                      </div>
+                    </RadioGroup>
+                    <Button onClick={handleReport}>Submit Report</Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
 

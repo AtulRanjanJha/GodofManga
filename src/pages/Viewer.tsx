@@ -28,14 +28,15 @@ const Viewer = () => {
       const currentScrollY = window.scrollY;
       
       if (Math.abs(currentScrollY - lastScrollY) > 50) {
-        setIsHeaderVisible(currentScrollY < lastScrollY);
+        setIsHeaderVisible(currentScrollY < lastScrollY || !isHeaderSticky);
         setLastScrollY(currentScrollY);
       }
 
-      // Reset timer
       clearTimeout(timeoutId);
       timeoutId = window.setTimeout(() => {
-        setIsHeaderVisible(true);
+        if (isHeaderSticky) {
+          setIsHeaderVisible(true);
+        }
       }, 1000);
     };
 
@@ -44,7 +45,7 @@ const Viewer = () => {
       window.removeEventListener('scroll', handleScroll);
       clearTimeout(timeoutId);
     };
-  }, [lastScrollY]);
+  }, [lastScrollY, isHeaderSticky]);
 
   const handleChapterChange = (chapter: string) => {
     if (chapterLinks[chapter as keyof typeof chapterLinks]) {
@@ -69,7 +70,7 @@ const Viewer = () => {
     <div className="min-h-screen bg-background">
       <div className={`transition-transform duration-300 ${
         isHeaderVisible ? 'translate-y-0' : '-translate-y-full'
-      }`}>
+      } ${isHeaderSticky ? 'fixed top-0 left-0 right-0 z-50' : ''}`}>
         <Header />
       </div>
       
@@ -79,7 +80,7 @@ const Viewer = () => {
         <div className={`w-full aspect-[4/3] relative ${getFitClass()}`}>
           <iframe 
             src={`https://drive.google.com/file/d/${chapterLinks[currentChapter as keyof typeof chapterLinks]}/preview`}
-            className="w-full h-full absolute inset-0"
+            className={`w-full h-full absolute inset-0 ${getFitClass()}`}
             allow="autoplay"
           />
         </div>
@@ -94,8 +95,18 @@ const Viewer = () => {
       <Navigation 
         currentChapter={currentChapter}
         onChapterChange={handleChapterChange}
-        onPrevPage={() => {}}
-        onNextPage={() => {}}
+        onPrevPage={() => {
+          window.scrollBy({
+            top: window.innerHeight * 0.8,
+            behavior: 'smooth'
+          });
+        }}
+        onNextPage={() => {
+          window.scrollBy({
+            top: -window.innerHeight * 0.8,
+            behavior: 'smooth'
+          });
+        }}
         availableChapters={Object.keys(chapterLinks).filter(
           chapter => chapterLinks[chapter as keyof typeof chapterLinks]
         )}
