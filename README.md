@@ -10,7 +10,6 @@ There are several ways of editing your application.
 
 **Use Lovable**
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/fb91d767-8d39-435d-b462-590277c21a76) and start prompting.
 
 Changes made via Lovable will be committed automatically to this repo.
 
